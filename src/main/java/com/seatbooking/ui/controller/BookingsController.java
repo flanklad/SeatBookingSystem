@@ -15,43 +15,55 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Shows all bookings for the current simulation date.
- * Supports inline book / cancel / check-in actions.
+ * Shows bookings for the current simulation date (or all dates when toggled).
+ * Supports live search, status filter, inline check-in / cancel, and new booking form.
  */
 public class BookingsController {
 
     // Table
-    @FXML private TableView<Booking>                    table;
-    @FXML private TableColumn<Booking, String>          colId;
-    @FXML private TableColumn<Booking, String>          colMember;
-    @FXML private TableColumn<Booking, String>          colSeat;
-    @FXML private TableColumn<Booking, String>          colStatus;
-    @FXML private TableColumn<Booking, String>          colType;
-    @FXML private TableColumn<Booking, String>          colDate;
+    @FXML private TableView<Booking>           table;
+    @FXML private TableColumn<Booking, String> colId;
+    @FXML private TableColumn<Booking, String> colMember;
+    @FXML private TableColumn<Booking, String> colSeat;
+    @FXML private TableColumn<Booking, String> colStatus;
+    @FXML private TableColumn<Booking, String> colType;
+    @FXML private TableColumn<Booking, String> colDate;
+
+    // Filters
+    @FXML private TextField          searchField;
+    @FXML private ComboBox<String>   statusFilter;
+    @FXML private CheckBox           showAllDates;
+    @FXML private Label              lblCount;
 
     // Booking form
     @FXML private TextField  fldMemberId;
     @FXML private TextField  fldSeatNumber;
     @FXML private Label      lblError;
 
-    private final AppContext            ctx = AppContext.get();
-    private final ObservableList<Booking> items = FXCollections.observableArrayList();
+    private final AppContext               ctx   = AppContext.get();
+    private final ObservableList<Booking>  all   = FXCollections.observableArrayList();
+    private FilteredList<Booking>          filtered;
 
     // ─────────────────────────────────────────────────────────────────────────
 
     @FXML
     public void initialize() {
-        colId.setCellValueFactory(d     -> new SimpleStringProperty(d.getValue().getId().substring(0, 8)));
-        colMember.setCellValueFactory(d -> new SimpleStringProperty(resolveName(d.getValue().getMemberId())));
-        colSeat.setCellValueFactory(d   -> new SimpleStringProperty(String.valueOf(d.getValue().getSeatNumber())));
-        colStatus.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStatus().name()));
-        colType.setCellValueFactory(d   -> new SimpleStringProperty(d.getValue().isAutoAssigned() ? "AUTO" : "MANUAL"));
-        colDate.setCellValueFactory(d   -> new SimpleStringProperty(d.getValue().getDate().toString()));
+        // Status filter options
+        statusFilter.getItems().setAll("All Statuses", "ACTIVE", "CANCELLED", "RELEASED");
+        statusFilter.setValue("All Statuses");
+        statusFilter.setOnAction(e -> applyFilter());
+
+        // Table columns
+        colId.setCellValueFactory(d      -> new SimpleStringProperty(d.getValue().getId().substring(0, 8)));
+        colMember.setCellValueFactory(d  -> new SimpleStringProperty(resolveName(d.getValue().getMemberId())));
+        colSeat.setCellValueFactory(d    -> new SimpleStringProperty(String.valueOf(d.getValue().getSeatNumber())));
+        colStatus.setCellValueFactory(d  -> new SimpleStringProperty(d.getValue().getStatus().name()));
+        colType.setCellValueFactory(d    -> new SimpleStringProperty(d.getValue().isAutoAssigned() ? "AUTO" : "MANUAL"));
+        colDate.setCellValueFactory(d    -> new SimpleStringProperty(d.getValue().getDate().toString()));
 
         // Colour-code status column
         colStatus.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(String s, boolean empty) {
+            @Override protected void updateItem(String s, boolean empty) {
                 super.updateItem(s, empty);
                 if (empty || s == null) { setText(null); setStyle(""); return; }
                 setText(s);
@@ -64,20 +76,63 @@ public class BookingsController {
             }
         });
 
-        table.setItems(items);
+        // AUTO / MANUAL colour
+        colType.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String s, boolean empty) {
+                super.updateItem(s, empty);
+                if (empty || s == null) { setText(null); setStyle(""); return; }
+                setText(s);
+                setStyle("AUTO".equals(s) ? "-fx-text-fill: #89b4fa;" : "-fx-text-fill: #cba6f7;");
+            }
+        });
+
+        // Filtered list wired to the table
+        filtered = new FilteredList<>(all, b -> true);
+        table.setItems(filtered);
+
+        // Live search
+        searchField.textProperty().addListener((obs, old, v) -> applyFilter());
+
         ctx.addRefreshListener(this::refresh);
         refresh();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Refresh
+    // Data load + filter
     // ─────────────────────────────────────────────────────────────────────────
 
     private void refresh() {
-        LocalDate date = ctx.getCurrentDate();
-        List<Booking> bookings = ctx.getEngine().getBookingsForDate(date);
-        items.setAll(bookings);
+        all.setAll(ctx.getStore().getData().getBookings());
+        applyFilter();
         lblError.setText("");
+    }
+
+    @FXML
+    private void onFilterChanged() { applyFilter(); }
+
+    private void applyFilter() {
+        LocalDate date       = ctx.getCurrentDate();
+        boolean   allDates   = showAllDates.isSelected();
+        String    search     = searchField.getText().toLowerCase();
+        String    statusSel  = statusFilter.getValue();
+
+        filtered.setPredicate(b -> {
+            // Date filter
+            if (!allDates && !b.getDate().equals(date)) return false;
+
+            // Status filter
+            if (!"All Statuses".equals(statusSel) && !b.getStatus().name().equals(statusSel)) return false;
+
+            // Search filter
+            if (!search.isBlank()) {
+                String memberName = resolveName(b.getMemberId()).toLowerCase();
+                String memberId   = b.getMemberId().toLowerCase();
+                if (!memberName.contains(search) && !memberId.contains(search)) return false;
+            }
+            return true;
+        });
+
+        lblCount.setText(filtered.size() + " booking(s)");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -101,8 +156,10 @@ public class BookingsController {
             ctx.fireRefresh();
             fldMemberId.clear();
             fldSeatNumber.clear();
+            ctx.showStatus("Seat " + seatNum + " booked for " + resolveName(memberId) + ".", true);
         } catch (Exception e) {
             lblError.setText(e.getMessage());
+            ctx.showStatus("Booking failed: " + e.getMessage(), false);
         }
     }
 
@@ -113,7 +170,11 @@ public class BookingsController {
         try {
             ctx.getEngine().cancel(selected.getId());
             ctx.fireRefresh();
-        } catch (Exception e) { lblError.setText(e.getMessage()); }
+            ctx.showStatus("Booking cancelled for " + resolveName(selected.getMemberId()) + ".", true);
+        } catch (Exception e) {
+            lblError.setText(e.getMessage());
+            ctx.showStatus(e.getMessage(), false);
+        }
     }
 
     @FXML
@@ -123,7 +184,11 @@ public class BookingsController {
         try {
             ctx.getEngine().checkIn(selected.getId());
             ctx.fireRefresh();
-        } catch (Exception e) { lblError.setText(e.getMessage()); }
+            ctx.showStatus(resolveName(selected.getMemberId()) + " checked in to seat " + selected.getSeatNumber() + ".", true);
+        } catch (Exception e) {
+            lblError.setText(e.getMessage());
+            ctx.showStatus(e.getMessage(), false);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────

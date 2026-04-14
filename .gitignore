@@ -20,3 +20,9 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code local settings
+.claude/
+
+# Maven shade artifact
+dependency-reduced-pom.xml

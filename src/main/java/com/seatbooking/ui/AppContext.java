@@ -33,6 +33,9 @@ public class AppContext {
     /** All registered UI refresh callbacks. */
     private final List<Runnable> refreshListeners = new ArrayList<>();
 
+    /** Single status-bar callback registered by MainWindowController. */
+    private java.util.function.Consumer<String[]> statusCallback;
+
     // ─────────────────────────────────────────────────────────────────────────
 
     private AppContext() {
@@ -67,6 +70,28 @@ public class AppContext {
      */
     public void addRefreshListener(Runnable listener) {
         refreshListeners.add(listener);
+    }
+
+    /** Registers the status-bar callback (called by MainWindowController once). */
+    public void setStatusCallback(java.util.function.Consumer<String[]> cb) {
+        this.statusCallback = cb;
+    }
+
+    /**
+     * Shows a status message in the main window's status bar.
+     * Thread-safe — may be called from any thread.
+     *
+     * @param msg     human-readable message
+     * @param success true → green success style; false → red error style
+     */
+    public void showStatus(String msg, boolean success) {
+        if (statusCallback == null) return;
+        String[] args = { msg, success ? "ok" : "err" };
+        if (Platform.isFxApplicationThread()) {
+            statusCallback.accept(args);
+        } else {
+            Platform.runLater(() -> statusCallback.accept(args));
+        }
     }
 
     /**

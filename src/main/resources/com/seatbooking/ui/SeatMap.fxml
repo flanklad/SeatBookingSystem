@@ -6,16 +6,19 @@
 <VBox xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.seatbooking.ui.controller.SeatMapController"
-      spacing="16" styleClass="view-root">
+      spacing="14" styleClass="view-root">
     <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
 
     <!-- ── Toolbar ─────────────────────────────────────────────────────── -->
     <HBox spacing="10" alignment="CENTER_LEFT">
         <Label text="SEAT MAP" styleClass="view-title"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="⟳  Refresh"     styleClass="btn-secondary"  onAction="#refresh" fx:id="btnRefresh"/>
-        <Button text="▶  Init Day"     styleClass="btn-primary"    onAction="#initDay"/>
-        <Button text="🔒  Block 3PM"   styleClass="btn-danger"     onAction="#triggerBlock"/>
+        <Label text="Filter:" styleClass="label-muted"/>
+        <ComboBox fx:id="filterBatch" prefWidth="160"/>
+        <Separator orientation="VERTICAL" style="-fx-padding: 0 4 0 4;"/>
+        <Button text="⟳  Refresh"    styleClass="btn-secondary" onAction="#refresh"/>
+        <Button text="▶  Init Day"   styleClass="btn-primary"   onAction="#initDay"/>
+        <Button text="🔒  Block 3PM" styleClass="btn-danger"    onAction="#triggerBlock"/>
     </HBox>
 
     <!-- ── Legend ──────────────────────────────────────────────────────── -->
@@ -28,7 +31,7 @@
     </HBox>
 
     <!-- ── Fixed seats ─────────────────────────────────────────────────── -->
-    <VBox styleClass="card" spacing="10">
+    <VBox styleClass="card" spacing="10" VBox.vgrow="ALWAYS">
         <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
         <HBox alignment="CENTER_LEFT" spacing="8">
             <Label text="FIXED SEATS  (1 – 40)" styleClass="card-title"/>

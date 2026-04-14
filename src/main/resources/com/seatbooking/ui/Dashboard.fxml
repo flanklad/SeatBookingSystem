@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.seatbooking.ui.controller.DashboardController"
+            fitToWidth="true" styleClass="view-root"
+            hbarPolicy="NEVER">
+
+    <VBox spacing="20" styleClass="view-root">
+        <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
+
+        <!-- ── Title row ─────────────────────────────────────────────────── -->
+        <HBox alignment="CENTER_LEFT" spacing="16">
+            <VBox spacing="4">
+                <Label fx:id="lblWelcome" styleClass="dashboard-welcome"/>
+                <Label fx:id="lblSubtitle" styleClass="dashboard-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="▶  Init Today"   styleClass="btn-primary"   onAction="#initToday"/>
+            <Button text="🔒  Block 3PM"   styleClass="btn-danger"    onAction="#blockToday"/>
+        </HBox>
+
+        <!-- ── Stat cards row ────────────────────────────────────────────── -->
+        <HBox spacing="14">
+            <VBox styleClass="dash-stat-card dash-card-blue" HBox.hgrow="ALWAYS">
+                <Label text="BOOKINGS TODAY" styleClass="dash-stat-label"/>
+                <Label fx:id="lblBookingsToday" styleClass="dash-stat-value"/>
+                <Label fx:id="lblBookingsDesc"  styleClass="dash-stat-sub"/>
+            </VBox>
+            <VBox styleClass="dash-stat-card dash-card-green" HBox.hgrow="ALWAYS">
+                <Label text="FREE SEATS" styleClass="dash-stat-label"/>
+                <Label fx:id="lblFreeSeats"   styleClass="dash-stat-value"/>
+                <Label fx:id="lblFreeDesc"    styleClass="dash-stat-sub"/>
+            </VBox>
+            <VBox styleClass="dash-stat-card dash-card-mauve" HBox.hgrow="ALWAYS">
+                <Label text="OCCUPANCY" styleClass="dash-stat-label"/>
+                <Label fx:id="lblOccupancy"  styleClass="dash-stat-value"/>
+                <Label fx:id="lblOccDesc"    styleClass="dash-stat-sub"/>
+            </VBox>
+            <VBox styleClass="dash-stat-card dash-card-peach" HBox.hgrow="ALWAYS">
+                <Label text="ON VACATION" styleClass="dash-stat-label"/>
+                <Label fx:id="lblOnVacation"  styleClass="dash-stat-value"/>
+                <Label fx:id="lblVacDesc"     styleClass="dash-stat-sub"/>
+            </VBox>
+        </HBox>
+
+        <!-- ── Middle row: week schedule + recent bookings ───────────────── -->
+        <HBox spacing="16" VBox.vgrow="ALWAYS">
+
+            <!-- Weekly schedule card -->
+            <VBox styleClass="card" spacing="12" HBox.hgrow="ALWAYS">
+                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Label text="THIS WEEK'S SCHEDULE" styleClass="card-title"/>
+                    <Label fx:id="lblWeekRange" styleClass="dash-stat-sub"/>
+                </HBox>
+                <HBox fx:id="weekRow" spacing="8"/>
+                <HBox spacing="14" alignment="CENTER_LEFT">
+                    <Label text="● Batch A" styleClass="legend-occupied"/>
+                    <Label text="● Batch B" styleClass="legend-free"/>
+                    <Label text="● Holiday" styleClass="legend-blocked"/>
+                    <Label text="● Weekend" styleClass="legend-released"/>
+                </HBox>
+            </VBox>
+
+            <!-- Recent bookings card -->
+            <VBox styleClass="card" spacing="10" prefWidth="360">
+                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                <Label text="RECENT BOOKINGS" styleClass="card-title"/>
+                <TableView fx:id="recentTable" prefHeight="220" styleClass="data-table">
+                    <columns>
+                        <TableColumn fx:id="colRMember" text="Member"  prefWidth="140"/>
+                        <TableColumn fx:id="colRSeat"   text="Seat"    prefWidth="50"/>
+                        <TableColumn fx:id="colRStatus" text="Status"  prefWidth="90"/>
+                        <TableColumn fx:id="colRDate"   text="Date"    prefWidth="95"/>
+                    </columns>
+                    <placeholder><Label text="No bookings yet." styleClass="table-placeholder"/></placeholder>
+                </TableView>
+            </VBox>
+
+        </HBox>
+
+        <!-- ── Bottom row: schedule info + holidays ──────────────────────── -->
+        <HBox spacing="16">
+
+            <!-- Today's detail card -->
+            <VBox styleClass="card" spacing="8" HBox.hgrow="ALWAYS">
+                <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+                <Label text="TODAY'S DETAIL" styleClass="card-title"/>
+                <HBox spacing="30">
+                    <VBox spacing="4">
+                        <Label text="Scheduled Batch" styleClass="label-muted"/>
+                        <Label fx:id="lblBatchToday" styleClass="dash-detail-value"/>
+                    </VBox>
+                    <VBox spacing="4">
+                        <Label text="Fortnight Week" styleClass="label-muted"/>
+                        <Label fx:id="lblFortnightWeek" styleClass="dash-detail-value"/>
+                    </VBox>
+                    <VBox spacing="4">
+                        <Label text="Squad Day" styleClass="label-muted"/>
+                        <Label fx:id="lblSquadDay" styleClass="dash-detail-value"/>
+                    </VBox>
+                    <VBox spacing="4">
+                        <Label text="Blocked Seats" styleClass="label-muted"/>
+                        <Label fx:id="lblBlocked" styleClass="dash-detail-value"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Upcoming holidays card -->
+            <VBox styleClass="card" spacing="8" prefWidth="280">
+                <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+                <Label text="UPCOMING HOLIDAYS" styleClass="card-title"/>
+                <VBox fx:id="holidayList" spacing="4"/>
+            </VBox>
+
+        </HBox>
+
+    </VBox>
+</ScrollPane>

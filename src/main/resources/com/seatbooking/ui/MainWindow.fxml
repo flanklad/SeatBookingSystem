@@ -22,20 +22,28 @@
 
     <!-- ── LEFT SIDEBAR ───────────────────────────────────────────────── -->
     <left>
-        <VBox styleClass="sidebar" spacing="4" prefWidth="175">
+        <VBox styleClass="sidebar" spacing="4" prefWidth="180">
             <padding><Insets top="16" right="8" bottom="16" left="8"/></padding>
 
             <Label text="NAVIGATION" styleClass="sidebar-section-label"/>
-            <Button text="🗺  Seat Map"   styleClass="nav-btn" maxWidth="Infinity" onAction="#showSeatMap"/>
-            <Button text="📋  Bookings"   styleClass="nav-btn" maxWidth="Infinity" onAction="#showBookings"/>
-            <Button text="📊  Analytics"  styleClass="nav-btn" maxWidth="Infinity" onAction="#showAnalytics"/>
-            <Button text="👥  Members"    styleClass="nav-btn" maxWidth="Infinity" onAction="#showMembers"/>
-            <Button text="⚙   Admin"      styleClass="nav-btn" maxWidth="Infinity" onAction="#showAdmin"/>
+            <Button fx:id="btnDashboard" text="🏠  Dashboard"  styleClass="nav-btn" maxWidth="Infinity" onAction="#showDashboard"/>
+            <Button fx:id="btnSeatMap"   text="🗺  Seat Map"   styleClass="nav-btn" maxWidth="Infinity" onAction="#showSeatMap"/>
+            <Button fx:id="btnBookings"  text="📋  Bookings"   styleClass="nav-btn" maxWidth="Infinity" onAction="#showBookings"/>
+            <Button fx:id="btnAnalytics" text="📊  Analytics"  styleClass="nav-btn" maxWidth="Infinity" onAction="#showAnalytics"/>
+            <Button fx:id="btnMembers"   text="👥  Members"    styleClass="nav-btn" maxWidth="Infinity" onAction="#showMembers"/>
+            <Button fx:id="btnAdmin"     text="⚙   Admin"      styleClass="nav-btn" maxWidth="Infinity" onAction="#showAdmin"/>
 
             <Region VBox.vgrow="ALWAYS"/>
             <Separator/>
             <Label text="SIMULATION DATE" styleClass="sidebar-section-label"/>
-            <DatePicker fx:id="datePicker" maxWidth="Infinity" onAction="#onDateChanged"/>
+            <!-- Prev / date picker / next -->
+            <HBox spacing="4" alignment="CENTER">
+                <Button fx:id="btnPrevDay" text="‹" styleClass="day-nav-btn" onAction="#prevDay"
+                        minWidth="28" maxWidth="28" minHeight="28"/>
+                <DatePicker fx:id="datePicker" onAction="#onDateChanged" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnNextDay" text="›" styleClass="day-nav-btn" onAction="#nextDay"
+                        minWidth="28" maxWidth="28" minHeight="28"/>
+            </HBox>
         </VBox>
     </left>
 
@@ -43,5 +51,13 @@
     <center>
         <StackPane fx:id="contentArea" styleClass="content-area"/>
     </center>
+
+    <!-- ── STATUS BAR ─────────────────────────────────────────────────── -->
+    <bottom>
+        <HBox fx:id="statusBar" styleClass="status-bar" alignment="CENTER_LEFT" spacing="8">
+            <padding><Insets top="5" right="16" bottom="5" left="16"/></padding>
+            <Label fx:id="lblStatus" styleClass="status-label" text="Ready"/>
+        </HBox>
+    </bottom>
 
 </BorderPane>

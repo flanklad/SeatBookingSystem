@@ -63,18 +63,22 @@ public class AdminController {
         LocalDate date = initDayPicker.getValue();
         if (date == null) { setResult(lblInitResult, "Select a date.", false); return; }
         if (ctx.getSchedule().isHoliday(date)) {
-            setResult(lblInitResult, date + " is a public holiday — cannot initialise.", false);
+            String msg = date + " is a public holiday — cannot initialise.";
+            setResult(lblInitResult, msg, false);
+            ctx.showStatus(msg, false);
             return;
         }
         if (ctx.getSchedule().isWeekend(date)) {
-            setResult(lblInitResult, date + " is a weekend — no seats to assign.", false);
+            String msg = date + " is a weekend — no seats to assign.";
+            setResult(lblInitResult, msg, false);
+            ctx.showStatus(msg, false);
             return;
         }
         ctx.getEngine().initializeDay(date);
         ctx.fireRefresh();
-        setResult(lblInitResult,
-            "Day initialised: " + date + "  [" + ctx.getSchedule().describeDayType(date) + "]",
-            true);
+        String msg = "Day initialised: " + date + "  [" + ctx.getSchedule().describeDayType(date) + "]";
+        setResult(lblInitResult, msg, true);
+        ctx.showStatus(msg, true);
     }
 
     @FXML
@@ -83,7 +87,9 @@ public class AdminController {
         if (date == null) { setResult(lblBlockResult, "Select a date.", false); return; }
         int blocked = ctx.getScheduler().triggerNow(date);
         ctx.fireRefresh();
-        setResult(lblBlockResult, "Blocked " + blocked + " seat(s) on " + date + ".", true);
+        String msg = "Blocked " + blocked + " seat(s) on " + date + ".";
+        setResult(lblBlockResult, msg, true);
+        ctx.showStatus(msg, true);
     }
 
     @FXML
@@ -98,8 +104,13 @@ public class AdminController {
         try {
             ctx.getEngine().setVacation(memberId, start, end);
             ctx.fireRefresh();
-            setResult(lblVacResult, "Vacation set for " + memberId + " (" + start + " → " + end + ").", true);
-        } catch (Exception e) { setResult(lblVacResult, e.getMessage(), false); }
+            String msg = "Vacation set for " + memberId + " (" + start + " → " + end + ").";
+            setResult(lblVacResult, msg, true);
+            ctx.showStatus(msg, true);
+        } catch (Exception e) {
+            setResult(lblVacResult, e.getMessage(), false);
+            ctx.showStatus(e.getMessage(), false);
+        }
     }
 
     @FXML
@@ -110,8 +121,13 @@ public class AdminController {
         try {
             ctx.getEngine().clearVacation(memberId);
             ctx.fireRefresh();
-            setResult(lblVacResult, "Vacation cleared for " + memberId + ".", true);
-        } catch (Exception e) { setResult(lblVacResult, e.getMessage(), false); }
+            String msg = "Vacation cleared for " + memberId + ".";
+            setResult(lblVacResult, msg, true);
+            ctx.showStatus(msg, true);
+        } catch (Exception e) {
+            setResult(lblVacResult, e.getMessage(), false);
+            ctx.showStatus(e.getMessage(), false);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
