@@ -1,5 +1,6 @@
 package com.seatbooking.ui.controller;
 
+import com.seatbooking.bq.BigQueryExporter;
 import com.seatbooking.model.Squad;
 import com.seatbooking.ui.AppContext;
 import javafx.fxml.FXML;
@@ -27,6 +28,10 @@ public class AdminController {
     @FXML private DatePicker       vacStartPicker;
     @FXML private DatePicker       vacEndPicker;
     @FXML private Label            lblVacResult;
+
+    // Panel 4 – BigQuery export
+    @FXML private TextField fldBqDir;
+    @FXML private Label     lblBqResult;
 
     private final AppContext ctx = AppContext.get();
 
@@ -127,6 +132,23 @@ public class AdminController {
         } catch (Exception e) {
             setResult(lblVacResult, e.getMessage(), false);
             ctx.showStatus(e.getMessage(), false);
+        }
+    }
+
+    @FXML
+    private void doExportBigQuery() {
+        String dir = (fldBqDir.getText() == null || fldBqDir.getText().isBlank())
+            ? "bq-export" : fldBqDir.getText().trim();
+        try {
+            BigQueryExporter exporter = new BigQueryExporter(
+                ctx.getStore(), ctx.getSchedule(), ctx.getAnalytics());
+            String result = exporter.export(dir);
+            setResult(lblBqResult, result, true);
+            ctx.showStatus("BigQuery export complete → " + dir, true);
+        } catch (Exception e) {
+            String msg = "Export failed: " + e.getMessage();
+            setResult(lblBqResult, msg, false);
+            ctx.showStatus(msg, false);
         }
     }
 

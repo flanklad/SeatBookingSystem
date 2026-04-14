@@ -62,4 +62,18 @@
         <Label fx:id="lblVacResult" wrapText="true"/>
     </VBox>
 
+    <!-- Panel 4: BigQuery Export -->
+    <VBox styleClass="card" spacing="12">
+        <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+        <Label text="☁  BIGQUERY EXPORT" styleClass="card-title"/>
+        <Label text="Exports bookings, daily stats, and members as NDJSON files, then writes an upload.bat to push to BigQuery project seatbookingsystem-493310."
+               styleClass="label-muted" wrapText="true"/>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="Output dir:" styleClass="label-muted"/>
+            <TextField fx:id="fldBqDir" promptText="bq-export" prefWidth="200"/>
+            <Button text="Export to NDJSON" styleClass="btn-primary" onAction="#doExportBigQuery"/>
+        </HBox>
+        <Label fx:id="lblBqResult" wrapText="true"/>
+    </VBox>
+
 </VBox>
