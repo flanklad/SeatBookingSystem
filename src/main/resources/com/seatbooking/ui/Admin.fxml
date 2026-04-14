@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.seatbooking.ui.controller.AdminController"
+      spacing="20" styleClass="view-root">
+    <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+    <Label text="ADMIN PANEL" styleClass="view-title"/>
+
+    <!-- Panel 1: Initialise day -->
+    <VBox styleClass="card" spacing="12">
+        <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+        <Label text="▶  INITIALISE DAY" styleClass="card-title"/>
+        <Label text="Resets all seats to FREE and auto-assigns fixed seats to the scheduled batch."
+               styleClass="label-muted" wrapText="true"/>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="Date:" styleClass="label-muted"/>
+            <DatePicker fx:id="initDayPicker" prefWidth="160"/>
+            <Button text="Initialise" styleClass="btn-primary" onAction="#doInitDay"/>
+        </HBox>
+        <Label fx:id="lblInitResult" wrapText="true"/>
+    </VBox>
+
+    <!-- Panel 2: Trigger 3 PM block -->
+    <VBox styleClass="card" spacing="12">
+        <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+        <Label text="🔒  TRIGGER 3 PM AUTO-BLOCK" styleClass="card-title"/>
+        <Label text="Transitions all currently FREE seats to BLOCKED for the selected date."
+               styleClass="label-muted" wrapText="true"/>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="Date:" styleClass="label-muted"/>
+            <DatePicker fx:id="blockDayPicker" prefWidth="160"/>
+            <Button text="Block Now" styleClass="btn-danger" onAction="#doTriggerBlock"/>
+        </HBox>
+        <Label fx:id="lblBlockResult" wrapText="true"/>
+    </VBox>
+
+    <!-- Panel 3: Vacation -->
+    <VBox styleClass="card" spacing="12">
+        <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
+        <Label text="✈  VACATION MANAGEMENT" styleClass="card-title"/>
+        <Label text="Setting vacation auto-releases any active bookings in the window."
+               styleClass="label-muted" wrapText="true"/>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="Member:" styleClass="label-muted"/>
+            <ComboBox fx:id="memberCombo" prefWidth="260"/>
+        </HBox>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="From:"   styleClass="label-muted"/>
+            <DatePicker fx:id="vacStartPicker" prefWidth="160"/>
+            <Label text="To:"     styleClass="label-muted"/>
+            <DatePicker fx:id="vacEndPicker"   prefWidth="160"/>
+        </HBox>
+        <HBox spacing="10">
+            <Button text="Set Vacation"   styleClass="btn-primary"   onAction="#doSetVacation"/>
+            <Button text="Clear Vacation" styleClass="btn-secondary" onAction="#doClearVacation"/>
+        </HBox>
+        <Label fx:id="lblVacResult" wrapText="true"/>
+    </VBox>
+
+</VBox>

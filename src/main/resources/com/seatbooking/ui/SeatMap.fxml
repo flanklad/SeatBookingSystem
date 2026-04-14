@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.seatbooking.ui.controller.SeatMapController"
+      spacing="16" styleClass="view-root">
+    <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+    <!-- ── Toolbar ─────────────────────────────────────────────────────── -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="SEAT MAP" styleClass="view-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="⟳  Refresh"     styleClass="btn-secondary"  onAction="#refresh" fx:id="btnRefresh"/>
+        <Button text="▶  Init Day"     styleClass="btn-primary"    onAction="#initDay"/>
+        <Button text="🔒  Block 3PM"   styleClass="btn-danger"     onAction="#triggerBlock"/>
+    </HBox>
+
+    <!-- ── Legend ──────────────────────────────────────────────────────── -->
+    <HBox spacing="20" alignment="CENTER_LEFT" styleClass="legend">
+        <Label text="● FREE"     styleClass="legend-free"/>
+        <Label text="● RESERVED" styleClass="legend-reserved"/>
+        <Label text="● OCCUPIED" styleClass="legend-occupied"/>
+        <Label text="● BLOCKED"  styleClass="legend-blocked"/>
+        <Label text="● RELEASED" styleClass="legend-released"/>
+    </HBox>
+
+    <!-- ── Fixed seats ─────────────────────────────────────────────────── -->
+    <VBox styleClass="card" spacing="10">
+        <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Label text="FIXED SEATS  (1 – 40)" styleClass="card-title"/>
+            <Label text="← one row per squad" styleClass="card-subtitle"/>
+        </HBox>
+        <GridPane fx:id="seatGrid" hgap="8" vgap="8"/>
+    </VBox>
+
+    <!-- ── Floater seats ───────────────────────────────────────────────── -->
+    <VBox styleClass="card" spacing="10">
+        <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+        <Label text="FLOATER SEATS  (41 – 50)" styleClass="card-title"/>
+        <HBox fx:id="floaterRow" spacing="8"/>
+    </VBox>
+
+    <!-- ── Summary bar ─────────────────────────────────────────────────── -->
+    <HBox styleClass="summary-bar" spacing="24" alignment="CENTER_LEFT">
+        <padding><Insets top="8" right="14" bottom="8" left="14"/></padding>
+        <Label fx:id="lblFree"     styleClass="stat-free"/>
+        <Label fx:id="lblReserved" styleClass="stat-reserved"/>
+        <Label fx:id="lblOccupied" styleClass="stat-occupied"/>
+        <Label fx:id="lblBlocked"  styleClass="stat-blocked"/>
+        <Label fx:id="lblReleased" styleClass="stat-released"/>
+    </HBox>
+
+</VBox>

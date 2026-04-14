@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.seatbooking.ui.controller.MembersController"
+      spacing="16" styleClass="view-root">
+    <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+    <Label text="MEMBERS" styleClass="view-title"/>
+
+    <!-- Search -->
+    <TextField fx:id="searchField" promptText="🔍  Search by name or ID…" styleClass="search-field"/>
+
+    <!-- Members table -->
+    <TableView fx:id="table" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="colId"       text="ID"         prefWidth="70"/>
+            <TableColumn fx:id="colName"     text="Name"       prefWidth="180"/>
+            <TableColumn fx:id="colSquad"    text="Squad"      prefWidth="100"/>
+            <TableColumn fx:id="colBatch"    text="Batch"      prefWidth="70"/>
+            <TableColumn fx:id="colSeat"     text="Home Seat"  prefWidth="90"/>
+            <TableColumn fx:id="colVacation" text="Vacation"   prefWidth="200"/>
+        </columns>
+        <placeholder><Label text="No members found." styleClass="table-placeholder"/></placeholder>
+    </TableView>
+
+    <!-- Vacation form -->
+    <VBox styleClass="card" spacing="10">
+        <padding><Insets top="12" right="14" bottom="12" left="14"/></padding>
+        <Label text="VACATION MANAGEMENT" styleClass="card-title"/>
+        <HBox spacing="10" alignment="CENTER_LEFT" wrapLength="600">
+            <TextField fx:id="vacMemberIdField" promptText="Member ID" prefWidth="110"/>
+            <Label text="From:" styleClass="label-muted"/>
+            <DatePicker fx:id="vacStartPicker" prefWidth="150"/>
+            <Label text="To:"   styleClass="label-muted"/>
+            <DatePicker fx:id="vacEndPicker"   prefWidth="150"/>
+            <Button text="Set Vacation"   styleClass="btn-primary" onAction="#setVacation"/>
+            <Button text="Clear Vacation" styleClass="btn-secondary" onAction="#clearVacation"/>
+        </HBox>
+        <Label fx:id="lblVacResult" wrapText="true"/>
+    </VBox>
+
+</VBox>

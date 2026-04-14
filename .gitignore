@@ -1,0 +1,22 @@
+# Maven
+target/
+*.class
+
+# IntelliJ IDEA
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries/
+.idea/shelf/
+*.iws
+out/
+
+# Data store (runtime-generated)
+data/
+
+# Deployment output
+dist/
+
+# OS
+.DS_Store
+Thumbs.db

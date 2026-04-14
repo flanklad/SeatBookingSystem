@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.seatbooking.ui.controller.MainWindowController"
+            styleClass="root-pane">
+
+    <!-- ── TOP HEADER ─────────────────────────────────────────────────── -->
+    <top>
+        <HBox styleClass="header" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+            <Label text="⬡ SEAT BOOKING SYSTEM" styleClass="header-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblDate"    styleClass="header-date"/>
+            <Label fx:id="lblDayType" styleClass="header-badge"/>
+            <Label fx:id="lblWeek"    styleClass="header-week"/>
+        </HBox>
+    </top>
+
+    <!-- ── LEFT SIDEBAR ───────────────────────────────────────────────── -->
+    <left>
+        <VBox styleClass="sidebar" spacing="4" prefWidth="175">
+            <padding><Insets top="16" right="8" bottom="16" left="8"/></padding>
+
+            <Label text="NAVIGATION" styleClass="sidebar-section-label"/>
+            <Button text="🗺  Seat Map"   styleClass="nav-btn" maxWidth="Infinity" onAction="#showSeatMap"/>
+            <Button text="📋  Bookings"   styleClass="nav-btn" maxWidth="Infinity" onAction="#showBookings"/>
+            <Button text="📊  Analytics"  styleClass="nav-btn" maxWidth="Infinity" onAction="#showAnalytics"/>
+            <Button text="👥  Members"    styleClass="nav-btn" maxWidth="Infinity" onAction="#showMembers"/>
+            <Button text="⚙   Admin"      styleClass="nav-btn" maxWidth="Infinity" onAction="#showAdmin"/>
+
+            <Region VBox.vgrow="ALWAYS"/>
+            <Separator/>
+            <Label text="SIMULATION DATE" styleClass="sidebar-section-label"/>
+            <DatePicker fx:id="datePicker" maxWidth="Infinity" onAction="#onDateChanged"/>
+        </VBox>
+    </left>
+
+    <!-- ── CENTRE CONTENT ─────────────────────────────────────────────── -->
+    <center>
+        <StackPane fx:id="contentArea" styleClass="content-area"/>
+    </center>
+
+</BorderPane>

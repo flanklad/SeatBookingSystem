@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.seatbooking.ui.controller.BookingsController"
+      spacing="16" styleClass="view-root">
+    <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+    <!-- Title -->
+    <Label text="BOOKINGS" styleClass="view-title"/>
+
+    <!-- Table -->
+    <TableView fx:id="table" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="colId"     text="Booking ID"  prefWidth="110"/>
+            <TableColumn fx:id="colMember" text="Member"      prefWidth="180"/>
+            <TableColumn fx:id="colSeat"   text="Seat"        prefWidth="60"/>
+            <TableColumn fx:id="colStatus" text="Status"      prefWidth="100"/>
+            <TableColumn fx:id="colType"   text="Type"        prefWidth="80"/>
+            <TableColumn fx:id="colDate"   text="Date"        prefWidth="110"/>
+        </columns>
+        <placeholder><Label text="No bookings for this date." styleClass="table-placeholder"/></placeholder>
+    </TableView>
+
+    <!-- Action row on selected booking -->
+    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="action-row">
+        <Button text="✔  Check In"      styleClass="btn-primary"   onAction="#doCheckIn"/>
+        <Button text="✖  Cancel"         styleClass="btn-danger"    onAction="#doCancel"/>
+        <Label text="(Select a row first)" styleClass="label-muted"/>
+    </HBox>
+
+    <!-- New booking form -->
+    <VBox styleClass="card" spacing="10">
+        <padding><Insets top="12" right="14" bottom="12" left="14"/></padding>
+        <Label text="NEW BOOKING" styleClass="card-title"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <TextField fx:id="fldMemberId"   promptText="Member ID  (e.g. M001)" prefWidth="200"/>
+            <TextField fx:id="fldSeatNumber" promptText="Seat  (1–50)"            prefWidth="120"/>
+            <Button    text="Book" styleClass="btn-primary" onAction="#doBook"/>
+        </HBox>
+        <Label fx:id="lblError" styleClass="label-error" wrapText="true"/>
+    </VBox>
+
+</VBox>

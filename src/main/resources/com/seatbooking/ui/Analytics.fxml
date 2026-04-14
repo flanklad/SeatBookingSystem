@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.seatbooking.ui.controller.AnalyticsController"
+      spacing="16" styleClass="view-root">
+    <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+    <Label text="UTILISATION ANALYTICS" styleClass="view-title"/>
+
+    <!-- Today's stat cards -->
+    <HBox spacing="12">
+        <VBox styleClass="stat-card">
+            <Label text="TOTAL SEATS" styleClass="stat-card-label"/>
+            <Label fx:id="lblTotal"   styleClass="stat-card-value"/>
+        </VBox>
+        <VBox styleClass="stat-card,stat-card-reserved">
+            <Label text="RESERVED"        styleClass="stat-card-label"/>
+            <Label fx:id="lblReserved"    styleClass="stat-card-value"/>
+        </VBox>
+        <VBox styleClass="stat-card,stat-card-occupied">
+            <Label text="OCCUPIED"        styleClass="stat-card-label"/>
+            <Label fx:id="lblOccupied"    styleClass="stat-card-value"/>
+        </VBox>
+        <VBox styleClass="stat-card,stat-card-blocked">
+            <Label text="BLOCKED"         styleClass="stat-card-label"/>
+            <Label fx:id="lblBlocked"     styleClass="stat-card-value"/>
+        </VBox>
+        <VBox styleClass="stat-card">
+            <Label text="RELEASED"        styleClass="stat-card-label"/>
+            <Label fx:id="lblReleased"    styleClass="stat-card-value"/>
+        </VBox>
+        <VBox styleClass="stat-card,stat-card-free">
+            <Label text="FREE"            styleClass="stat-card-label"/>
+            <Label fx:id="lblFree"        styleClass="stat-card-value"/>
+        </VBox>
+        <VBox styleClass="stat-card,stat-card-accent">
+            <Label text="OCCUPANCY %"     styleClass="stat-card-label"/>
+            <Label fx:id="lblOccupancy"   styleClass="stat-card-value"/>
+        </VBox>
+        <VBox styleClass="stat-card,stat-card-blocked">
+            <Label text="WASTED"          styleClass="stat-card-label"/>
+            <Label fx:id="lblWasted"      styleClass="stat-card-value"/>
+        </VBox>
+    </HBox>
+
+    <!-- BarChart added programmatically by controller -->
+    <VBox fx:id="chartBox" styleClass="card" VBox.vgrow="ALWAYS">
+        <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+        <Label text="PER-SQUAD BOOKINGS" styleClass="card-title"/>
+    </VBox>
+
+    <!-- Range stats -->
+    <VBox styleClass="card" spacing="10">
+        <padding><Insets top="12" right="14" bottom="12" left="14"/></padding>
+        <Label text="RANGE SUMMARY" styleClass="card-title"/>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="From:" styleClass="label-muted"/>
+            <DatePicker fx:id="fromPicker"/>
+            <Label text="To:" styleClass="label-muted"/>
+            <DatePicker fx:id="toPicker"/>
+            <Button text="Refresh" styleClass="btn-secondary" onAction="#refreshRange"/>
+        </HBox>
+        <HBox spacing="30">
+            <VBox spacing="2">
+                <Label text="Days with data" styleClass="label-muted"/>
+                <Label fx:id="lblRangeDates" styleClass="stat-value-sm"/>
+            </VBox>
+            <VBox spacing="2">
+                <Label text="Avg occupancy" styleClass="label-muted"/>
+                <Label fx:id="lblRangeAvg"  styleClass="stat-value-sm"/>
+            </VBox>
+            <VBox spacing="2">
+                <Label text="Total wasted" styleClass="label-muted"/>
+                <Label fx:id="lblRangeWasted" styleClass="stat-value-sm"/>
+            </VBox>
+        </HBox>
+    </VBox>
+
+</VBox>
