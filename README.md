@@ -1,3 +1,5 @@
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/-Mfgd9AF)
+
 # Seat Booking System
 
 A fortnightly seat rotation and booking management system built with Java 17 and JavaFX 17. Manages 50 seats across 10 squads in two rotating batches, with a rule engine, 3 PM auto-block scheduler, utilisation analytics, and a dark-themed GUI.
