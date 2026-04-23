@@ -1,6 +1,8 @@
 package com.seatbooking.ui.controller;
 
+import com.seatbooking.model.Member;
 import com.seatbooking.ui.AppContext;
+import com.seatbooking.ui.LoginDialog;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -31,6 +33,7 @@ public class MainWindowController {
     @FXML private Label     lblDate;
     @FXML private Label     lblDayType;
     @FXML private Label     lblWeek;
+    @FXML private Label     lblUser;
     @FXML private DatePicker datePicker;
 
     // Nav buttons (needed to manage active state)
@@ -56,6 +59,7 @@ public class MainWindowController {
     public void initialize() {
         datePicker.setValue(ctx.getCurrentDate());
         updateHeader();
+        updateUserBadge();
         ctx.addRefreshListener(this::updateHeader);
 
         // Register status-bar callback
@@ -75,6 +79,19 @@ public class MainWindowController {
         lblWeek.setText("Fortnight Week " + ctx.getSchedule().getFortnightWeek(date));
     }
 
+    private void updateUserBadge() {
+        if (ctx.getCurrentUser() == null) return;
+        boolean admin = ctx.isAdmin();
+        lblUser.setText(ctx.getCurrentUser().getName() + "  [" + (admin ? "ADMIN" : "EMPLOYEE") + "]");
+        lblUser.setStyle(admin
+            ? "-fx-text-fill: #f38ba8; -fx-font-weight: bold;"   // red  for admin
+            : "-fx-text-fill: #a6e3a1; -fx-font-weight: bold;"); // green for employee
+
+        // Admin panel is only visible to admins
+        btnAdmin.setVisible(admin);
+        btnAdmin.setManaged(admin);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Date navigation
     // ─────────────────────────────────────────────────────────────────────────
@@ -84,6 +101,7 @@ public class MainWindowController {
         LocalDate selected = datePicker.getValue();
         if (selected != null) {
             ctx.setCurrentDate(selected);
+            ctx.getEngine().initializeDayIfNeeded(selected);
             ctx.fireRefresh();
         }
     }
@@ -93,6 +111,7 @@ public class MainWindowController {
         LocalDate d = ctx.getCurrentDate().minusDays(1);
         ctx.setCurrentDate(d);
         datePicker.setValue(d);
+        ctx.getEngine().initializeDayIfNeeded(d);
         ctx.fireRefresh();
     }
 
@@ -101,6 +120,7 @@ public class MainWindowController {
         LocalDate d = ctx.getCurrentDate().plusDays(1);
         ctx.setCurrentDate(d);
         datePicker.setValue(d);
+        ctx.getEngine().initializeDayIfNeeded(d);
         ctx.fireRefresh();
     }
 
@@ -130,6 +150,16 @@ public class MainWindowController {
     // ─────────────────────────────────────────────────────────────────────────
     // Navigation
     // ─────────────────────────────────────────────────────────────────────────
+
+    @FXML
+    private void logout() {
+        Member newUser = LoginDialog.show().orElse(null);
+        if (newUser == null) return;          // user cancelled — stay logged in
+        ctx.setCurrentUser(newUser);
+        updateUserBadge();
+        ctx.fireRefresh();
+        showDashboard();                      // return to dashboard after login
+    }
 
     @FXML public void showDashboard()  { showView("Dashboard",  btnDashboard); }
     @FXML public void showSeatMap()    { showView("SeatMap",    btnSeatMap); }

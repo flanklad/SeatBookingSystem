@@ -1,7 +1,10 @@
 package com.seatbooking;
 
+import com.seatbooking.model.Member;
 import com.seatbooking.ui.AppContext;
+import com.seatbooking.ui.LoginDialog;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,6 +23,13 @@ public class SeatBookingApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        Member loggedIn = LoginDialog.show().orElse(null);
+        if (loggedIn == null) {
+            Platform.exit();
+            return;
+        }
+        AppContext.get().setCurrentUser(loggedIn);
+
         Parent root = FXMLLoader.load(
             getClass().getResource("/com/seatbooking/ui/MainWindow.fxml"));
 
@@ -27,7 +37,7 @@ public class SeatBookingApp extends Application {
         scene.getStylesheets().add(
             getClass().getResource("/com/seatbooking/ui/dark-theme.css").toExternalForm());
 
-        stage.setTitle("Seat Booking System  —  v1.0");
+        stage.setTitle("Seat Booking System");
         stage.setMinWidth(960);
         stage.setMinHeight(640);
         stage.setScene(scene);

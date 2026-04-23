@@ -14,6 +14,7 @@ public class Member {
     private boolean      onVacation;
     private LocalDate    vacationStart;
     private LocalDate    vacationEnd;
+    private final Role   role;
 
     @JsonCreator
     public Member(@JsonProperty("id")             String id,
@@ -22,7 +23,8 @@ public class Member {
                   @JsonProperty("homeSeatNumber") int homeSeatNumber,
                   @JsonProperty("onVacation")     boolean onVacation,
                   @JsonProperty("vacationStart")  LocalDate vacationStart,
-                  @JsonProperty("vacationEnd")    LocalDate vacationEnd) {
+                  @JsonProperty("vacationEnd")    LocalDate vacationEnd,
+                  @JsonProperty("role")           Role role) {
         this.id             = id;
         this.name           = name;
         this.squadId        = squadId;
@@ -30,6 +32,7 @@ public class Member {
         this.onVacation     = onVacation;
         this.vacationStart  = vacationStart;
         this.vacationEnd    = vacationEnd;
+        this.role           = role != null ? role : Role.EMPLOYEE;
     }
 
     public boolean isOnVacationOn(LocalDate date) {
@@ -45,6 +48,8 @@ public class Member {
     public boolean   isOnVacation()      { return onVacation; }
     public LocalDate getVacationStart()  { return vacationStart; }
     public LocalDate getVacationEnd()    { return vacationEnd; }
+    public Role      getRole()           { return role; }
+    public boolean   isAdmin()           { return role == Role.ADMIN; }
 
     // ---- setters ----
     public void setOnVacation(boolean onVacation)      { this.onVacation = onVacation; }

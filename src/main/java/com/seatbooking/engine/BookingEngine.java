@@ -22,6 +22,7 @@ public class BookingEngine {
         this.store    = store;
         this.schedule = schedule;
         this.ruleEngine = new RuleEngine()
+            .addRule(new WeekendBookingRule())
             .addRule(new HolidayRule())
             .addRule(new AfterThreePMRule())
             .addRule(new VacationRule())
@@ -34,6 +35,24 @@ public class BookingEngine {
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
+     * Initializes the day only if it has not been initialized yet.
+     * Skips weekends, holidays, and days that already have bookings.
+     * Returns true if initialization was performed.
+     */
+    public boolean initializeDayIfNeeded(LocalDate date) {
+        if (schedule.isWeekend(date) || schedule.isHoliday(date)) return false;
+        if (schedule.getScheduledBatch(date) == 0) return false;
+
+        // If auto-assigned bookings already exist for this date, batch init already ran
+        boolean alreadyDone = store.getData().getBookings().stream()
+            .anyMatch(b -> b.getDate().equals(date) && b.isAutoAssigned());
+        if (alreadyDone) return false;
+
+        initializeDay(date);
+        return true;
+    }
+
+    /**
      * Resets all seats to FREE and, if it is a batch day, auto-assigns
      * the 40 fixed seats to the scheduled batch members.
      * Safe to call multiple times (idempotent for the same date).
@@ -44,8 +63,8 @@ public class BookingEngine {
         // Reset seat states
         data.getSeats().forEach(Seat::resetToFree);
 
-        // Remove stale bookings for this date so we can recreate them cleanly
-        data.getBookings().removeIf(b -> b.getDate().equals(date));
+        // Remove only auto-assigned bookings so manual pre-bookings are preserved
+        data.getBookings().removeIf(b -> b.getDate().equals(date) && b.isAutoAssigned());
 
         int scheduledBatch = schedule.getScheduledBatch(date);
         if (scheduledBatch != 0 && !schedule.isHoliday(date)) {
@@ -96,10 +115,21 @@ public class BookingEngine {
         Optional<String> violation = ruleEngine.validate(member, seat, date, store);
         violation.ifPresent(msg -> { throw new IllegalArgumentException(msg); });
 
-        // Check seat availability
-        if (!seat.isFree()) {
-            throw new IllegalArgumentException(
-                "Seat " + seatNumber + " is not free (current state: " + seat.getState() + ").");
+        // Check seat availability — physical state for today; booking records for future dates
+        if (date.equals(LocalDate.now())) {
+            if (!seat.isFree()) {
+                throw new IllegalArgumentException(
+                    "Seat " + seatNumber + " is not free (current state: " + seat.getState() + ").");
+            }
+        } else {
+            boolean seatTaken = data.getBookings().stream()
+                .anyMatch(b -> b.getSeatNumber() == seatNumber
+                            && b.getDate().equals(date)
+                            && b.isActive());
+            if (seatTaken) {
+                throw new IllegalArgumentException(
+                    "Seat " + seatNumber + " is already booked for " + date + ".");
+            }
         }
 
         // Check member doesn't already have a booking for this date
@@ -112,8 +142,11 @@ public class BookingEngine {
                 member.getName() + " already has an active booking on " + date + ".");
         }
 
-        seat.transitionTo(SeatState.RESERVED);
-        seat.setAssignedMemberId(memberId);
+        // Only update physical seat state for same-day bookings
+        if (date.equals(LocalDate.now())) {
+            seat.transitionTo(SeatState.RESERVED);
+            seat.setAssignedMemberId(memberId);
+        }
         Booking booking = Booking.manual(memberId, seatNumber, date);
         data.getBookings().add(booking);
         store.save();
@@ -157,6 +190,7 @@ public class BookingEngine {
                 "Seat " + seat.getSeatNumber() + " must be RESERVED to check in.");
         }
         seat.transitionTo(SeatState.OCCUPIED);
+        booking.setStatus(BookingStatus.OCCUPIED);
         store.save();
     }
 

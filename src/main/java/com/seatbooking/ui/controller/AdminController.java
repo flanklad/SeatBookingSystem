@@ -5,6 +5,7 @@ import com.seatbooking.model.Squad;
 import com.seatbooking.ui.AppContext;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +15,8 @@ import java.util.stream.Collectors;
  * Administrative operations: day initialisation, vacation management, 3PM block.
  */
 public class AdminController {
+
+    @FXML private VBox adminRoot;
 
     // Panel 1 – Initialise day
     @FXML private DatePicker initDayPicker;
@@ -39,12 +42,24 @@ public class AdminController {
 
     @FXML
     public void initialize() {
+        // Non-admins see a blocked panel — belt-and-suspenders since the nav
+        // button is already hidden, but guards against any direct navigation.
+        if (!ctx.isAdmin()) {
+            adminRoot.getChildren().clear();
+            Label denied = new Label("⛔  Admin access only.\nThis panel is restricted to administrators.");
+            denied.setStyle("-fx-text-fill: #f38ba8; -fx-font-size: 15px; -fx-text-alignment: center;");
+            denied.setMaxWidth(Double.MAX_VALUE);
+            adminRoot.getChildren().add(denied);
+            return;
+        }
+
         LocalDate today = ctx.getCurrentDate();
         initDayPicker.setValue(today);
         blockDayPicker.setValue(today);
 
-        // Populate member combo
+        // Populate member combo (exclude the admin account itself)
         List<String> memberItems = ctx.getStore().getData().getMembers().stream()
+            .filter(m -> !m.isAdmin())
             .map(m -> m.getId() + "  " + m.getName())
             .collect(Collectors.toList());
         memberCombo.getItems().setAll(memberItems);
@@ -65,6 +80,7 @@ public class AdminController {
 
     @FXML
     private void doInitDay() {
+        if (!ctx.isAdmin()) { setResult(lblInitResult, "Admin access required.", false); return; }
         LocalDate date = initDayPicker.getValue();
         if (date == null) { setResult(lblInitResult, "Select a date.", false); return; }
         if (ctx.getSchedule().isHoliday(date)) {
@@ -88,6 +104,7 @@ public class AdminController {
 
     @FXML
     private void doTriggerBlock() {
+        if (!ctx.isAdmin()) { setResult(lblBlockResult, "Admin access required.", false); return; }
         LocalDate date = blockDayPicker.getValue();
         if (date == null) { setResult(lblBlockResult, "Select a date.", false); return; }
         int blocked = ctx.getScheduler().triggerNow(date);
@@ -99,6 +116,7 @@ public class AdminController {
 
     @FXML
     private void doSetVacation() {
+        if (!ctx.isAdmin()) { setResult(lblVacResult, "Admin access required.", false); return; }
         String selection = memberCombo.getValue();
         if (selection == null) { setResult(lblVacResult, "Select a member.", false); return; }
         String memberId = selection.split("\\s+")[0];
@@ -120,6 +138,7 @@ public class AdminController {
 
     @FXML
     private void doClearVacation() {
+        if (!ctx.isAdmin()) { setResult(lblVacResult, "Admin access required.", false); return; }
         String selection = memberCombo.getValue();
         if (selection == null) { setResult(lblVacResult, "Select a member.", false); return; }
         String memberId = selection.split("\\s+")[0];
@@ -137,6 +156,7 @@ public class AdminController {
 
     @FXML
     private void doExportBigQuery() {
+        if (!ctx.isAdmin()) { setResult(lblBqResult, "Admin access required.", false); return; }
         String dir = (fldBqDir.getText() == null || fldBqDir.getText().isBlank())
             ? "bq-export" : fldBqDir.getText().trim();
         try {

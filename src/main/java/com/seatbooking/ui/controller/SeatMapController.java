@@ -1,6 +1,7 @@
 package com.seatbooking.ui.controller;
 
 import com.seatbooking.model.*;
+import com.seatbooking.model.BookingStatus;
 import com.seatbooking.ui.AppContext;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -119,6 +120,7 @@ public class SeatMapController {
     @FXML
     public void refresh() {
         List<Seat> seats = ctx.getStore().getData().getSeats();
+        LocalDate  date  = ctx.getCurrentDate();
         String filter = filterBatch.getValue();
         long free = 0, res = 0, occ = 0, blk = 0, rel = 0;
 
@@ -130,17 +132,22 @@ public class SeatMapController {
             if (seat.getSeatNumber() <= 40) {
                 boolean visible = true;
                 if ("Batch A (1–5)".equals(filter)) {
-                    visible = seat.getSeatNumber() <= 40 && isBatchASeat(seat.getSeatNumber());
+                    visible = isBatchASeat(seat.getSeatNumber());
                 } else if ("Batch B (6–10)".equals(filter)) {
-                    visible = seat.getSeatNumber() <= 40 && !isBatchASeat(seat.getSeatNumber());
+                    visible = !isBatchASeat(seat.getSeatNumber());
                 }
                 tile.setVisible(visible);
                 tile.setManaged(visible);
             }
 
+            // Derive state from bookings for the selected date, not physical seat state.
+            // Physical state is only valid for the last-initialized day.
+            SeatState displayState    = getDisplayState(seat, date);
+            String    displayMemberId = getDisplayMemberId(seat, date);
+
             // CSS state class
             tile.getStyleClass().removeIf(c -> c.startsWith("seat-") && !c.equals("seat-tile"));
-            String sc = switch (seat.getState()) {
+            String sc = switch (displayState) {
                 case FREE     -> "seat-free";
                 case RESERVED -> "seat-reserved";
                 case OCCUPIED -> "seat-occupied";
@@ -152,30 +159,30 @@ public class SeatMapController {
             // Member name on tile
             VBox inner = (VBox) tile.getChildren().get(0);
             Label memberLbl = (Label) inner.getChildren().get(1);
-            if (seat.getAssignedMemberId() != null) {
+            if (displayMemberId != null) {
                 String name = ctx.getStore().getData().getMembers().stream()
-                    .filter(m -> m.getId().equals(seat.getAssignedMemberId()))
+                    .filter(m -> m.getId().equals(displayMemberId))
                     .map(m -> firstName(m.getName()))
                     .findFirst().orElse("?");
                 memberLbl.setText(name);
             } else {
-                memberLbl.setText(seat.getState() == SeatState.FREE ? "free" :
-                                  seat.getState() == SeatState.BLOCKED ? "—" : "");
+                memberLbl.setText(displayState == SeatState.FREE ? "free" :
+                                  displayState == SeatState.BLOCKED ? "—" : "");
             }
 
             // Tooltip
-            String memberInfo = seat.getAssignedMemberId() == null ? "—"
+            String memberInfo = displayMemberId == null ? "—"
                 : ctx.getStore().getData().getMembers().stream()
-                    .filter(m -> m.getId().equals(seat.getAssignedMemberId()))
+                    .filter(m -> m.getId().equals(displayMemberId))
                     .map(Member::getName).findFirst()
-                    .orElse(seat.getAssignedMemberId());
+                    .orElse(displayMemberId);
             Tooltip.install(tile, new Tooltip(
                 "Seat " + seat.getSeatNumber()
                 + " [" + seat.getType() + "]"
-                + "\nState: " + seat.getState()
+                + "\nState: " + displayState
                 + "\nMember: " + memberInfo));
 
-            switch (seat.getState()) {
+            switch (displayState) {
                 case FREE     -> free++;
                 case RESERVED -> res++;
                 case OCCUPIED -> occ++;
@@ -188,6 +195,40 @@ public class SeatMapController {
         lblOccupied.setText("Occupied: " + occ);
         lblBlocked.setText("Blocked: " + blk);
         lblReleased.setText("Released: " + rel);
+    }
+
+    /**
+     * Derives the display state of a seat for a given date entirely from the
+     * booking record for that date.  The physical seat.getState() is NOT used
+     * for RESERVED/OCCUPIED because it is shared across all dates and becomes
+     * stale the moment the user navigates to a different day.
+     *
+     * BookingStatus.OCCUPIED is set by checkIn(), so it lives on the booking
+     * object (which is date-keyed) rather than on the seat object.
+     */
+    private SeatState getDisplayState(Seat seat, LocalDate date) {
+        Optional<Booking> booking = findActiveBookingForSeat(seat.getSeatNumber(), date);
+        if (booking.isPresent()) {
+            // Booking status is the source of truth — not the physical seat state.
+            return booking.get().getStatus() == BookingStatus.OCCUPIED
+                    ? SeatState.OCCUPIED
+                    : SeatState.RESERVED;
+        }
+        // No active booking for this seat on this date.
+        // Only use the physical state for today's BLOCKED / RELEASED / FREE view.
+        if (date.equals(LocalDate.now())) {
+            return seat.getState();
+        }
+        return SeatState.FREE;
+    }
+
+    /** Returns the member ID to display on a tile for the given date. */
+    private String getDisplayMemberId(Seat seat, LocalDate date) {
+        Optional<Booking> booking = findActiveBookingForSeat(seat.getSeatNumber(), date);
+        if (booking.isPresent()) return booking.get().getMemberId();
+        // For today, physical assignment is still valid (e.g. BLOCKED seats have no booking)
+        if (date.equals(LocalDate.now())) return seat.getAssignedMemberId();
+        return null;
     }
 
     /** Returns true if the fixed seat (1–40) belongs to Batch A squads (1–5). */
@@ -237,8 +278,11 @@ public class SeatMapController {
             .findFirst().orElse(null);
         if (seat == null) return;
 
+        // Use the booking-derived display state, not the physical seat state.
+        SeatState displayState = getDisplayState(seat, ctx.getCurrentDate());
+
         ContextMenu menu = new ContextMenu();
-        switch (seat.getState()) {
+        switch (displayState) {
             case FREE -> {
                 MenuItem book = new MenuItem("Book Seat " + seatNum + "…");
                 book.setOnAction(e -> showBookingDialog(seat));
@@ -257,7 +301,7 @@ public class SeatMapController {
                 menu.getItems().add(release);
             }
             default -> {
-                MenuItem info = new MenuItem("Seat " + seatNum + " — " + seat.getState() + " (no action)");
+                MenuItem info = new MenuItem("Seat " + seatNum + " — " + displayState + " (no action)");
                 info.setDisable(true);
                 menu.getItems().add(info);
             }
@@ -281,8 +325,10 @@ public class SeatMapController {
         search.setPromptText("Search by name or ID…");
         search.getStyleClass().add("search-field");
 
-        // Member list
-        List<Member> allMembers = ctx.getStore().getData().getMembers();
+        // Admin sees all members; employee only sees themselves
+        List<Member> allMembers = ctx.isAdmin()
+            ? ctx.getStore().getData().getMembers()
+            : List.of(ctx.getCurrentUser());
         ObservableList<Member> memberItems = FXCollections.observableArrayList(allMembers);
         FilteredList<Member> filtered = new FilteredList<>(memberItems, m -> true);
         search.textProperty().addListener((obs, old, text) ->
@@ -353,6 +399,12 @@ public class SeatMapController {
     private void doCheckIn(Seat seat) {
         Optional<Booking> b = findActiveBookingForSeat(seat.getSeatNumber());
         if (b.isEmpty()) { ctx.showStatus("No active booking for seat " + seat.getSeatNumber() + ".", false); return; }
+
+        if (!ctx.isAdmin() && !b.get().getMemberId().equals(ctx.getCurrentUser().getId())) {
+            ctx.showStatus("Permission denied: you can only check in your own seat.", false);
+            return;
+        }
+
         try {
             ctx.getEngine().checkIn(b.get().getId());
             ctx.fireRefresh();
@@ -363,6 +415,12 @@ public class SeatMapController {
     private void doCancel(Seat seat) {
         Optional<Booking> b = findActiveBookingForSeat(seat.getSeatNumber());
         if (b.isEmpty()) { ctx.showStatus("No active booking for seat " + seat.getSeatNumber() + ".", false); return; }
+
+        if (!ctx.isAdmin() && !b.get().getMemberId().equals(ctx.getCurrentUser().getId())) {
+            ctx.showStatus("Permission denied: you can only cancel your own booking.", false);
+            return;
+        }
+
         try {
             ctx.getEngine().cancel(b.get().getId());
             ctx.fireRefresh();
@@ -373,6 +431,12 @@ public class SeatMapController {
     private void doRelease(Seat seat) {
         Optional<Booking> b = findActiveBookingForSeat(seat.getSeatNumber());
         if (b.isEmpty()) { ctx.showStatus("No active booking for seat " + seat.getSeatNumber() + ".", false); return; }
+
+        if (!ctx.isAdmin() && !b.get().getMemberId().equals(ctx.getCurrentUser().getId())) {
+            ctx.showStatus("Permission denied: you can only release your own seat.", false);
+            return;
+        }
+
         try {
             ctx.getEngine().releaseSeat(b.get().getMemberId(), ctx.getCurrentDate());
             ctx.fireRefresh();
@@ -381,7 +445,10 @@ public class SeatMapController {
     }
 
     private Optional<Booking> findActiveBookingForSeat(int seatNum) {
-        LocalDate date = ctx.getCurrentDate();
+        return findActiveBookingForSeat(seatNum, ctx.getCurrentDate());
+    }
+
+    private Optional<Booking> findActiveBookingForSeat(int seatNum, LocalDate date) {
         return ctx.getStore().getData().getBookings().stream()
             .filter(b -> b.getSeatNumber() == seatNum
                       && b.getDate().equals(date)

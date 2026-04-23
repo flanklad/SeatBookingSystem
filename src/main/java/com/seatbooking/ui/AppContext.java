@@ -3,6 +3,7 @@ package com.seatbooking.ui;
 import com.seatbooking.analytics.UtilisationTracker;
 import com.seatbooking.engine.BookingEngine;
 import com.seatbooking.engine.ScheduleEngine;
+import com.seatbooking.model.Member;
 import com.seatbooking.scheduler.SeatBlockScheduler;
 import com.seatbooking.store.JsonDataStore;
 import javafx.application.Platform;
@@ -29,6 +30,7 @@ public class AppContext {
     private final SeatBlockScheduler  scheduler;
 
     private LocalDate currentDate = LocalDate.now();
+    private Member    currentUser = null;
 
     /** All registered UI refresh callbacks. */
     private final List<Runnable> refreshListeners = new ArrayList<>();
@@ -48,6 +50,9 @@ public class AppContext {
         // After the 3 PM auto-block, push a refresh to all open views.
         scheduler.setAfterBlockHook(this::fireRefresh);
         scheduler.start();
+
+        // Auto-initialize today's seats for the scheduled batch on startup.
+        engine.initializeDayIfNeeded(currentDate);
     }
 
     /** Call once from {@code Application.init()} before the scene graph starts. */
@@ -125,4 +130,7 @@ public class AppContext {
     public SeatBlockScheduler  getScheduler()  { return scheduler; }
     public LocalDate           getCurrentDate()             { return currentDate; }
     public void                setCurrentDate(LocalDate d)  { this.currentDate = d; }
+    public Member              getCurrentUser()             { return currentUser; }
+    public void                setCurrentUser(Member m)     { this.currentUser = m; }
+    public boolean             isAdmin()                    { return currentUser != null && currentUser.isAdmin(); }
 }

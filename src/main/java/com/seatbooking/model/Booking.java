@@ -58,7 +58,9 @@ public class Booking {
     // ---- setters ----
     public void setStatus(BookingStatus status) { this.status = status; }
 
-    public boolean isActive() { return status == BookingStatus.ACTIVE; }
+    public boolean isActive() {
+        return status == BookingStatus.ACTIVE || status == BookingStatus.OCCUPIED;
+    }
 
     @Override
     public String toString() {

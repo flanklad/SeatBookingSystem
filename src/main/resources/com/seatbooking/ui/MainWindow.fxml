@@ -17,6 +17,8 @@
             <Label fx:id="lblDate"    styleClass="header-date"/>
             <Label fx:id="lblDayType" styleClass="header-badge"/>
             <Label fx:id="lblWeek"    styleClass="header-week"/>
+            <Separator orientation="VERTICAL" style="-fx-opacity: 0.3;"/>
+            <Label fx:id="lblUser"    styleClass="header-badge"/>
         </HBox>
     </top>
 
@@ -34,6 +36,10 @@
             <Button fx:id="btnAdmin"     text="⚙   Admin"      styleClass="nav-btn" maxWidth="Infinity" onAction="#showAdmin"/>
 
             <Region VBox.vgrow="ALWAYS"/>
+            <Separator/>
+            <Button fx:id="btnLogout" text="🔓  Logout" styleClass="nav-btn"
+                    maxWidth="Infinity" onAction="#logout"
+                    style="-fx-text-fill: #f38ba8;"/>
             <Separator/>
             <Label text="SIMULATION DATE" styleClass="sidebar-section-label"/>
             <!-- Prev / date picker / next -->

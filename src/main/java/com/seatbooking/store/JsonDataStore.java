@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.seatbooking.model.*;
+import com.seatbooking.model.Role;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +95,10 @@ public class JsonDataStore {
         List<Member>  members = new ArrayList<>();
         List<Squad>   squads  = new ArrayList<>();
 
+        // M000 is the dedicated admin — not part of any squad or batch
+        members.add(new Member("M000", "Administrator", 0, 0, false, null, null, Role.ADMIN));
+
+        // 10 squads × 8 members = 80 employees (M001–M080)
         int memberCounter = 0;
 
         for (int squadId = 1; squadId <= 10; squadId++) {
@@ -116,7 +121,7 @@ public class JsonDataStore {
                 int homeSeat = ((squadId - 1) % 5) * 8 + slot;
 
                 Member m = new Member(memberId, memberName, squadId,
-                                      homeSeat, false, null, null);
+                                      homeSeat, false, null, null, Role.EMPLOYEE);
                 members.add(m);
                 memberIds.add(memberId);
             }

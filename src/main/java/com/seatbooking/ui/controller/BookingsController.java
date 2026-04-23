@@ -49,7 +49,7 @@ public class BookingsController {
     @FXML
     public void initialize() {
         // Status filter options
-        statusFilter.getItems().setAll("All Statuses", "ACTIVE", "CANCELLED", "RELEASED");
+        statusFilter.getItems().setAll("All Statuses", "ACTIVE", "OCCUPIED", "CANCELLED", "RELEASED");
         statusFilter.setValue("All Statuses");
         statusFilter.setOnAction(e -> applyFilter());
 
@@ -69,6 +69,7 @@ public class BookingsController {
                 setText(s);
                 setStyle(switch (s) {
                     case "ACTIVE"    -> "-fx-text-fill: #a6e3a1;";
+                    case "OCCUPIED"  -> "-fx-text-fill: #89b4fa;";
                     case "CANCELLED" -> "-fx-text-fill: #f38ba8;";
                     case "RELEASED"  -> "-fx-text-fill: #fab387;";
                     default          -> "-fx-text-fill: #cdd6f4;";
@@ -147,6 +148,14 @@ public class BookingsController {
             lblError.setText("Member ID and seat number are required.");
             return;
         }
+
+        // Non-admin can only book for themselves
+        if (!ctx.isAdmin() && !memberId.equals(ctx.getCurrentUser().getId())) {
+            lblError.setText("You can only book seats for yourself.");
+            ctx.showStatus("Permission denied: employees can only book for themselves.", false);
+            return;
+        }
+
         int seatNum;
         try { seatNum = Integer.parseInt(seatStr); }
         catch (NumberFormatException e) { lblError.setText("Invalid seat number."); return; }
@@ -167,6 +176,14 @@ public class BookingsController {
     private void doCancel() {
         Booking selected = table.getSelectionModel().getSelectedItem();
         if (selected == null) { lblError.setText("Select a booking to cancel."); return; }
+
+        // Non-admin can only cancel their own bookings
+        if (!ctx.isAdmin() && !selected.getMemberId().equals(ctx.getCurrentUser().getId())) {
+            lblError.setText("You can only cancel your own bookings.");
+            ctx.showStatus("Permission denied: employees can only cancel their own bookings.", false);
+            return;
+        }
+
         try {
             ctx.getEngine().cancel(selected.getId());
             ctx.fireRefresh();
@@ -181,6 +198,14 @@ public class BookingsController {
     private void doCheckIn() {
         Booking selected = table.getSelectionModel().getSelectedItem();
         if (selected == null) { lblError.setText("Select a booking to check in."); return; }
+
+        // Non-admin can only check in their own booking
+        if (!ctx.isAdmin() && !selected.getMemberId().equals(ctx.getCurrentUser().getId())) {
+            lblError.setText("You can only check in your own booking.");
+            ctx.showStatus("Permission denied: employees can only check in themselves.", false);
+            return;
+        }
+
         try {
             ctx.getEngine().checkIn(selected.getId());
             ctx.fireRefresh();
