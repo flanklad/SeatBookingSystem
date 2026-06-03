@@ -153,12 +153,23 @@ public class MainWindowController {
 
     @FXML
     private void logout() {
+        // Stash current user in case the re-login is cancelled
+        Member previousUser = ctx.getCurrentUser();
+        String previousToken = ctx.getAuthToken();
+
+        ctx.clearAuth();
         Member newUser = LoginDialog.show().orElse(null);
-        if (newUser == null) return;          // user cancelled — stay logged in
+        if (newUser == null) {
+            // Cancelled — restore the previous session
+            ctx.setCurrentUser(previousUser);
+            ctx.setAuthToken(previousToken);
+            return;
+        }
         ctx.setCurrentUser(newUser);
+        viewCache.clear();   // force view reload so role-gated panels reflect new user
         updateUserBadge();
         ctx.fireRefresh();
-        showDashboard();                      // return to dashboard after login
+        showDashboard();
     }
 
     @FXML public void showDashboard()  { showView("Dashboard",  btnDashboard); }

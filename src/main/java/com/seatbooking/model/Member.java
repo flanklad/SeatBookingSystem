@@ -15,6 +15,7 @@ public class Member {
     private LocalDate    vacationStart;
     private LocalDate    vacationEnd;
     private final Role   role;
+    private String       passwordHash;  // BCrypt hash; null until first migration/save
 
     @JsonCreator
     public Member(@JsonProperty("id")             String id,
@@ -24,7 +25,8 @@ public class Member {
                   @JsonProperty("onVacation")     boolean onVacation,
                   @JsonProperty("vacationStart")  LocalDate vacationStart,
                   @JsonProperty("vacationEnd")    LocalDate vacationEnd,
-                  @JsonProperty("role")           Role role) {
+                  @JsonProperty("role")           Role role,
+                  @JsonProperty("passwordHash")   String passwordHash) {
         this.id             = id;
         this.name           = name;
         this.squadId        = squadId;
@@ -33,6 +35,7 @@ public class Member {
         this.vacationStart  = vacationStart;
         this.vacationEnd    = vacationEnd;
         this.role           = role != null ? role : Role.EMPLOYEE;
+        this.passwordHash   = passwordHash;
     }
 
     public boolean isOnVacationOn(LocalDate date) {
@@ -51,10 +54,13 @@ public class Member {
     public Role      getRole()           { return role; }
     public boolean   isAdmin()           { return role == Role.ADMIN; }
 
+    public String    getPasswordHash()  { return passwordHash; }
+
     // ---- setters ----
-    public void setOnVacation(boolean onVacation)      { this.onVacation = onVacation; }
+    public void setOnVacation(boolean onVacation)         { this.onVacation = onVacation; }
     public void setVacationStart(LocalDate vacationStart) { this.vacationStart = vacationStart; }
-    public void setVacationEnd(LocalDate vacationEnd)    { this.vacationEnd = vacationEnd; }
+    public void setVacationEnd(LocalDate vacationEnd)     { this.vacationEnd = vacationEnd; }
+    public void setPasswordHash(String passwordHash)      { this.passwordHash = passwordHash; }
 
     @Override
     public String toString() {

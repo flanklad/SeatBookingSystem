@@ -3,6 +3,7 @@ package com.seatbooking.store;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.seatbooking.auth.AuthService;
 import com.seatbooking.model.*;
 import com.seatbooking.model.Role;
 
@@ -42,6 +43,7 @@ public class JsonDataStore {
             try {
                 data = mapper.readValue(file, AppData.class);
                 System.out.println("[Store] Loaded data from " + DATA_FILE);
+                migratePasswords();
                 return;
             } catch (IOException e) {
                 System.err.println("[Store] Failed to read " + DATA_FILE + ": " + e.getMessage());
@@ -50,6 +52,23 @@ public class JsonDataStore {
         System.out.println("[Store] No data file found — loading sample data.");
         data = buildSampleData();
         save();
+    }
+
+    /** Backfills passwordHash for members loaded from pre-JWT JSON files. */
+    private void migratePasswords() {
+        boolean changed = false;
+        String defaultHash = null; // computed lazily (one BCrypt call for all unset members)
+        for (Member m : data.getMembers()) {
+            if (m.getPasswordHash() == null) {
+                if (defaultHash == null) defaultHash = AuthService.hashPassword("password");
+                m.setPasswordHash(defaultHash);
+                changed = true;
+            }
+        }
+        if (changed) {
+            System.out.println("[Store] Migrated member passwords — saving.");
+            save();
+        }
     }
 
     public void save() {
@@ -95,8 +114,10 @@ public class JsonDataStore {
         List<Member>  members = new ArrayList<>();
         List<Squad>   squads  = new ArrayList<>();
 
+        String defaultHash = AuthService.hashPassword("password");
+
         // M000 is the dedicated admin — not part of any squad or batch
-        members.add(new Member("M000", "Administrator", 0, 0, false, null, null, Role.ADMIN));
+        members.add(new Member("M000", "Administrator", 0, 0, false, null, null, Role.ADMIN, defaultHash));
 
         // 10 squads × 8 members = 80 employees (M001–M080)
         int memberCounter = 0;
@@ -121,7 +142,7 @@ public class JsonDataStore {
                 int homeSeat = ((squadId - 1) % 5) * 8 + slot;
 
                 Member m = new Member(memberId, memberName, squadId,
-                                      homeSeat, false, null, null, Role.EMPLOYEE);
+                                      homeSeat, false, null, null, Role.EMPLOYEE, defaultHash);
                 members.add(m);
                 memberIds.add(memberId);
             }

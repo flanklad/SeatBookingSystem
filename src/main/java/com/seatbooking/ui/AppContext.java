@@ -1,6 +1,7 @@
 package com.seatbooking.ui;
 
 import com.seatbooking.analytics.UtilisationTracker;
+import com.seatbooking.auth.AuthService;
 import com.seatbooking.engine.BookingEngine;
 import com.seatbooking.engine.ScheduleEngine;
 import com.seatbooking.model.Member;
@@ -31,6 +32,7 @@ public class AppContext {
 
     private LocalDate currentDate = LocalDate.now();
     private Member    currentUser = null;
+    private String    authToken   = null;
 
     /** All registered UI refresh callbacks. */
     private final List<Runnable> refreshListeners = new ArrayList<>();
@@ -132,5 +134,18 @@ public class AppContext {
     public void                setCurrentDate(LocalDate d)  { this.currentDate = d; }
     public Member              getCurrentUser()             { return currentUser; }
     public void                setCurrentUser(Member m)     { this.currentUser = m; }
-    public boolean             isAdmin()                    { return currentUser != null && currentUser.isAdmin(); }
+    public String              getAuthToken()               { return authToken; }
+    public void                setAuthToken(String token)   { this.authToken = token; }
+
+    /** Clears session state — call before showing the login dialog on logout. */
+    public void clearAuth() {
+        this.currentUser = null;
+        this.authToken   = null;
+    }
+
+    /** Returns true only when both the in-memory role AND the JWT claim agree on ADMIN. */
+    public boolean isAdmin() {
+        if (currentUser == null || !currentUser.isAdmin()) return false;
+        return AuthService.isTokenAdmin(authToken);
+    }
 }
